@@ -287,9 +287,11 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(extractedData);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Claude extraction error:", error);
-    return NextResponse.json({ error: "Failed to extract data" }, { status: 500 });
+    const anthropicMsg = error?.error?.message || error?.message || "Failed to extract data";
+    const status = error?.status || 500;
+    return NextResponse.json({ error: anthropicMsg }, { status });
   }
 }
 

@@ -240,9 +240,11 @@ export async function POST(req: NextRequest) {
         "Cache-Control": "no-cache",
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Claude Digital Twin error:", error);
-    return NextResponse.json({ error: "Failed to reconstruct template" }, { status: 500 });
+    const anthropicMsg = error?.error?.message || error?.message || "Failed to reconstruct template";
+    const status = error?.status || 500;
+    return NextResponse.json({ error: anthropicMsg }, { status });
   }
 }
 
