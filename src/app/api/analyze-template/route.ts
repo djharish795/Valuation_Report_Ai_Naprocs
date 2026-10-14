@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { generateHash, getCachedResult, setCachedResult } from "@/lib/cache-utils";
@@ -243,3 +245,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to reconstruct template" }, { status: 500 });
   }
 }
+

@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import * as mammoth from "mammoth";
@@ -290,3 +292,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to extract data" }, { status: 500 });
   }
 }
+

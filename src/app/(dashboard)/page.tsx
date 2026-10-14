@@ -21,6 +21,7 @@ export default function Home() {
   const [baseRates, setBaseRates] = useState({ marketRate: "", governmentRate: "" });
   const [deedBase64, setDeedBase64] = useState<string>("");
   const [deedFileName, setDeedFileName] = useState<string>("");
+  const [extractionError, setExtractionError] = useState<string>("");
 
   const handleTemplateUpload = async (file: File) => {
     setTemplateStatus("uploading");
@@ -101,6 +102,12 @@ export default function Home() {
   };
 
   const handleDeedUpload = async (file: File) => {
+    setExtractionError("");
+    if (file.size > 3.2 * 1024 * 1024) {
+      alert("File is " + (file.size / (1024 * 1024)).toFixed(1) + "MB. Vercel serverless has a strict 4.5MB request payload limit (including base64 encoding). Please upload a document under 3.2MB or compress it.");
+      setDeedStatus("idle");
+      return;
+    }
     setDeedStatus("uploading");
     setLoadingText("Acquiring Legal Sale Deed...");
     const reader = new FileReader();
@@ -136,9 +143,17 @@ export default function Home() {
         setExtractionStatus("completed");
         setStep(4);
       } else {
+        if (response.status === 413) {
+          const msg = "File is too large for Vercel Serverless (HTTP 413 Content Too Large). Please upload a document smaller than 3.2MB.";
+          setExtractionError(msg);
+          alert(msg);
+        } else {
           const errorData = await response.json().catch(() => ({}));
-          console.error("Extraction failed:", errorData.error || response.statusText);
-          setExtractionStatus("idle");
+          const msg = errorData.error || ("Server error (status " + response.status + ")");
+          setExtractionError(msg);
+          console.error("Extraction failed:", msg);
+        }
+        setExtractionStatus("idle");
       }
     } catch (error) {
       console.error("Error during extraction:", error);
@@ -287,6 +302,11 @@ export default function Home() {
                   </button>
                   {extractionStatus === "processing" && (
                     <p className="text-center text-[10px] uppercase font-black tracking-widest text-primary animate-pulse">{loadingText}</p>
+                  )}
+                  {extractionError && (
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center font-medium">
+                      {extractionError}
+                    </div>
                   )}
                 </div>
               </div>
